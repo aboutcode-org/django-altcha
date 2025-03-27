@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "django-altcha"
 version = "0.0.1"
 description = "Django field and widget for Altcha CAPTCHA."
-readme = "README.rst"
+readme = "README.md"
 license = "MIT"
 authors = [
   { name = "nexB Inc.", email = "info@nexb.com" }
