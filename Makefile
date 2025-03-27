@@ -1,11 +1,8 @@
-# SPDX-License-Identifier: Apache-2.0
 #
 # Copyright (c) nexB Inc. and others. All rights reserved.
-# ScanCode is a trademark of nexB Inc.
-# SPDX-License-Identifier: Apache-2.0
-# See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
-# See https://github.com/aboutcode-org/skeleton for support or download.
-# See https://aboutcode.org for more information about nexB OSS projects.
+# SPDX-License-Identifier: MIT
+# See https://github.com/aboutcode-org/django-altcha for support or download.
+# See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
 # Python version can be specified with `$ PYTHON_EXE=python3.x make conf`
@@ -22,6 +19,12 @@ dev: virtualenv
 	@echo "-> Configure and install development dependencies"
 	@${ACTIVATE} pip install ${PIP_ARGS} --editable .[dev]
 
+check:
+	@echo "-> Run Ruff linter validation (pycodestyle, bandit, isort, and more)"
+	@${ACTIVATE} ruff check
+	@echo "-> Run Ruff format validation"
+	@${ACTIVATE} ruff format --check
+
 valid:
 	@echo "-> Run Ruff format"
 	@${ACTIVATE} ruff format
@@ -37,4 +40,9 @@ test:
 	@echo "-> Run the test suite"
 	${MANAGE} test --noinput --parallel auto
 
-.PHONY: virtualenv dev valid clean test
+dist:
+	@echo "-> Build source and wheel distributions"
+	@${ACTIVATE} pip install setuptools wheel
+	@${ACTIVATE} python -m build
+
+.PHONY: virtualenv dev check valid clean test dist

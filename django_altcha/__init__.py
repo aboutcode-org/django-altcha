@@ -8,12 +8,11 @@
 import json
 import secrets
 
+import altcha
 from django import forms
 from django.conf import settings
 from django.forms.widgets import HiddenInput
 from django.utils.translation import gettext_lazy as _
-
-import altcha
 
 __version__ = "0.0.1"
 VERSION = __version__
@@ -57,7 +56,8 @@ class AltchaWidget(HiddenInput):
         "floatinganchor": None,
         # Y offset from the anchor element for the floating UI (in pixels, default: 12).
         "floatingoffset": None,
-        # Enable a “persistent” mode to keep the widget visible under specific conditions.
+        # Enable a “persistent” mode to keep the widget visible under specific
+        # conditions.
         # Possible values: "true", "focus".
         "floatingpersist": None,
         # Hide the footer (ALTCHA link).
@@ -90,7 +90,8 @@ class AltchaWidget(HiddenInput):
         super().__init__()
         self.js_src_url = ALTCHA_JS_URL
         self.options = {
-            key: kwargs.get(key, self.default_options[key]) for key in self.default_options
+            key: kwargs.get(key, self.default_options[key])
+            for key in self.default_options
         }
 
     def get_context(self, name, value, attrs):
@@ -132,7 +133,9 @@ class AltchaField(forms.Field):
         super().validate(value)
 
         if not value:
-            raise forms.ValidationError(self.error_messages["required"], code="required")
+            raise forms.ValidationError(
+                self.error_messages["required"], code="required"
+            )
 
         try:
             # Verify the Altcha payload using the token and the secret HMAC key
