@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "nexb-skeleton"
+project = "django-altcha"
 copyright = "nexB Inc. and others."
 author = "AboutCode.org authors and contributors"
 
@@ -47,10 +47,6 @@ redirects = {}
 
 intersphinx_mapping = {
     "aboutcode": ("https://aboutcode.readthedocs.io/en/latest/", None),
-    "scancode-workbench": (
-        "https://scancode-workbench.readthedocs.io/en/develop/",
-        None,
-    ),
 }
 
 
@@ -80,7 +76,7 @@ master_doc = "index"
 html_context = {
     "display_github": True,
     "github_user": "nexB",
-    "github_repo": "nexb-skeleton",
+    "github_repo": "django-altcha",
     "github_version": "develop",  # branch
     "conf_py_path": "/docs/source/",  # path in the checkout to the docs root
 }

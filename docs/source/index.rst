@@ -1,11 +1,10 @@
-Welcome to nexb-skeleton's documentation!
+Welcome to django-altcha's documentation!
 =========================================
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   skeleton-usage
    contribute/contrib_doc
 
 Indices and tables
