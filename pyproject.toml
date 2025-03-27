@@ -1,52 +1,36 @@
 [build-system]
-requires = ["setuptools >= 50", "wheel", "setuptools_scm[toml] >= 6"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
-[tool.setuptools_scm]
-# this is used populated when creating a git archive
-# and when there is .git dir and/or there is no git installed
-fallback_version = "9999.$Format:%h-%cs$"
-
-[tool.pytest.ini_options]
-norecursedirs = [
-   ".git",
-   "bin",
-   "dist",
-   "build",
-   "_build",
-   "dist",
-   "etc",
-   "local",
-   "ci",
-   "docs",
-   "man",
-   "share",
-   "samples",
-   ".cache",
-   ".settings",
-   "Include",
-   "include",
-   "Lib",
-   "lib",
-   "lib64",
-   "Lib64",
-   "Scripts",
-   "thirdparty",
-   "tmp",
-   "venv",
-   "tests/data",
-   ".eggs",
-   "src/*/data",
-   "tests/*/data"
+[project]
+name = "django-altcha"
+description = "Django field and widget for Altcha CAPTCHA."
+readme = "README.rst"
+license = "MIT"
+authors = [
+  { name = "nexB Inc.", email = "info@nexb.com" }
 ]
-
-python_files = "*.py"
-
-python_classes = "Test"
-python_functions = "test"
-
-addopts = [
-    "-rfExXw",
-    "--strict-markers",
-    "--doctest-modules"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+requires-python = ">=3.9"
+dependencies = [
+    "Django>=4.2",
+    "altcha>=0.1.9",
+]
+keywords = ["captcha", "django", "widget", "form", "altcha"]
+dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/aboutcode-org/django-altcha"

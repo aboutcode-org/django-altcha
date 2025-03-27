@@ -10,45 +10,31 @@
 
 # Python version can be specified with `$ PYTHON_EXE=python3.x make conf`
 PYTHON_EXE?=python3
-VENV=venv
-ACTIVATE?=. ${VENV}/bin/activate;
+VENV_LOCATION=.venv
+ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
+MANAGE=${VENV_LOCATION}/bin/python manage.py
 
-dev:
-	@echo "-> Configure the development envt."
-	./configure --dev
+virtualenv:
+	@echo "-> Bootstrap the virtualenv with PYTHON_EXE=${PYTHON_EXE}"
+	${PYTHON_EXE} -m venv ${VENV_LOCATION}
 
-isort:
-	@echo "-> Apply isort changes to ensure proper imports ordering"
-	${VENV}/bin/isort --sl -l 100 src tests setup.py
+dev: virtualenv
+	@echo "-> Configure and install development dependencies"
+	@${ACTIVATE} pip install ${PIP_ARGS} --editable .[dev]
 
-black:
-	@echo "-> Apply black code formatter"
-	${VENV}/bin/black -l 100 src tests setup.py
-
-doc8:
-	@echo "-> Run doc8 validation"
-	@${ACTIVATE} doc8 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
-
-valid: isort black
-
-check:
-	@echo "-> Run pycodestyle (PEP8) validation"
-	@${ACTIVATE} pycodestyle --max-line-length=100 --exclude=.eggs,venv,lib,thirdparty,docs,migrations,settings.py,.cache .
-	@echo "-> Run isort imports ordering validation"
-	@${ACTIVATE} isort --sl --check-only -l 100 setup.py src tests .
-	@echo "-> Run black validation"
-	@${ACTIVATE} black --check --check -l 100 src tests setup.py
+valid:
+	@echo "-> Run Ruff format"
+	@${ACTIVATE} ruff format
+	@echo "-> Run Ruff linter"
+	@${ACTIVATE} ruff check --fix
 
 clean:
 	@echo "-> Clean the Python env"
-	./configure --clean
+	rm -rf .venv/ .*_cache/ *.egg-info/ build/ dist/
+	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 test:
 	@echo "-> Run the test suite"
-	${VENV}/bin/pytest -vvs
+	${MANAGE} test --noinput --parallel auto
 
-docs:
-	rm -rf docs/_build/
-	@${ACTIVATE} sphinx-build docs/ docs/_build/
-
-.PHONY: conf dev check valid black isort clean test docs
+.PHONY: virtualenv dev valid clean test
