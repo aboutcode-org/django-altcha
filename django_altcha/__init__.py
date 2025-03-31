@@ -87,7 +87,6 @@ class AltchaWidget(HiddenInput):
     def __init__(self, **kwargs):
         """Initialize the ALTCHA widget with configurable options."""
         super().__init__()
-        self.js_src_url = ALTCHA_JS_URL
         self.options = {
             key: kwargs.get(key, self.default_options[key])
             for key in self.default_options
@@ -95,7 +94,7 @@ class AltchaWidget(HiddenInput):
 
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
-        context["js_src_url"] = self.js_src_url
+        context["js_src_url"] = ALTCHA_JS_URL
         context["widget"]["altcha_options"] = self.options
         return context
 
