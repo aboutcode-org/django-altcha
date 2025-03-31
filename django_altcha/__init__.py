@@ -37,23 +37,21 @@ class AltchaWidget(HiddenInput):
     template_name = "altcha_widget.html"
 
     def __init__(self, options, *args, **kwargs):
-        """Store the ALTCHA widget options provide from the field."""
+        """Initialize the ALTCHA widget with provided options from the field."""
         self.options = options
         super().__init__(*args, **kwargs)
 
     def get_context(self, name, value, attrs):
+        """Generate the widget context, including ALTCHA JS URL and challenge."""
         context = super().get_context(name, value, attrs)
         context["js_src_url"] = ALTCHA_JS_URL
 
-        # When a `challengeurl` is provided, the challenge will be fetched from this
-        # URL. The `challengeurl` can point to a local view of the Django app, or
-        # to an external URL, such as the ALTCHA organization API.
-        # If the `challengeurl` is not provided, this is the "self-hosted" mode where a
-        # unique ALTCHA challenge is generated directly on the widget without relying on
-        # any external dependency.
-        # Note that the challenge needs to be generated on each new form rendering
-        # context, thus this call needs to leave in the `get_context` and not in the
-        # `__init__` that is only called on widget initialization.
+        # If a `challengeurl` is provided, the challenge will be fetched from this URL.
+        # This can be a local Django view or an external API endpoint.
+        # If not provided, a unique challenge is generated locally in a self-hosted
+        # mode.
+        # Since the challenge must be fresh for each form rendering, it is generated
+        # inside `get_context`, not `__init__`.
         if not self.options.get("challengeurl"):
             challenge = get_altcha_challenge()
             self.options["challengejson"] = json.dumps(challenge.__dict__)
@@ -62,7 +60,7 @@ class AltchaWidget(HiddenInput):
         return context
 
 
-class ALTCHAField(forms.Field):
+class AltchaField(forms.Field):
     widget = AltchaWidget
     default_error_messages = {
         "error": _("Failed to process CAPTCHA token"),
@@ -120,7 +118,7 @@ class ALTCHAField(forms.Field):
     }
 
     def __init__(self, *args, **kwargs):
-        """Provide the field options to the widget for rendering."""
+        """Initialize the ALTCHA field and pass widget options for rendering."""
         widget_options = {
             key: kwargs.pop(key, self.default_options[key])
             for key in self.default_options
@@ -129,7 +127,7 @@ class ALTCHAField(forms.Field):
         super().__init__(*args, **kwargs)
 
     def validate(self, value):
-        """Validate the CAPTCHA token and verify it with the altcha HMAC key."""
+        """Validate the CAPTCHA token and verify its authenticity."""
         super().validate(value)
 
         if not value:
