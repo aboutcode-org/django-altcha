@@ -37,6 +37,7 @@ keywords = ["captcha", "django", "widget", "form", "altcha"]
 dev = [
     "build",
     "ruff",
+    "pytest-django",
 ]
 docs = [
     "Sphinx>=5.0.2",
