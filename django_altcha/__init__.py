@@ -5,6 +5,7 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import json
 import secrets
 
 import altcha
@@ -16,13 +17,13 @@ from django.utils.translation import gettext_lazy as _
 __version__ = "0.0.1"
 VERSION = __version__
 
-# Get the ALTCHA_HMAC_KEY from the settings, or generate one if not present
+# Get the ALTCHA_HMAC_KEY from the settings, or generate one if not present.
 ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", secrets.token_hex(32))
 ALTCHA_JS_URL = getattr(settings, "ALTCHA_JS_URL", "/static/altcha/altcha.min.js")
 
 
 def get_altcha_challenge():
-    """Return an ALTCHA challenge."""
+    """Generate and return an ALTCHA challenge."""
     challenge = altcha.create_challenge(
         altcha.ChallengeOptions(
             hmac_key=ALTCHA_HMAC_KEY,
@@ -34,10 +35,44 @@ def get_altcha_challenge():
 
 class AltchaWidget(HiddenInput):
     template_name = "altcha_widget.html"
+
+    def __init__(self, options, *args, **kwargs):
+        """Store the ALTCHA widget options provide from the field."""
+        self.options = options
+        super().__init__(*args, **kwargs)
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        context["js_src_url"] = ALTCHA_JS_URL
+
+        # When a `challengeurl` is provided, the challenge will be fetched from this
+        # URL. The `challengeurl` can point to a local view of the Django app, or
+        # to an external URL, such as the ALTCHA organization API.
+        # If the `challengeurl` is not provided, this is the "self-hosted" mode where a
+        # unique ALTCHA challenge is generated directly on the widget without relying on
+        # any external dependency.
+        # Note that the challenge needs to be generated on each new form rendering
+        # context, thus this call needs to leave in the `get_context` and not in the
+        # `__init__` that is only called on widget initialization.
+        if not self.options.get("challengeurl"):
+            challenge = get_altcha_challenge()
+            self.options["challengejson"] = json.dumps(challenge.__dict__)
+
+        context["widget"]["altcha_options"] = self.options
+        return context
+
+
+class ALTCHAField(forms.Field):
+    widget = AltchaWidget
+    default_error_messages = {
+        "error": _("Failed to process CAPTCHA token"),
+        "invalid": _("Invalid CAPTCHA token."),
+        "required": _("ALTCHA CAPTCHA token is missing."),
+    }
     default_options = {
-        # Required: URL of your server to fetch the challenge from.
+        # URL of your server to fetch the challenge from.
         "challengeurl": None,
-        # Required: JSON-encoded challenge data
+        # JSON-encoded challenge data
         # (use instead of challengeurl to avoid HTTP request).
         "challengejson": None,
         # Automatically verify without user interaction.
@@ -84,39 +119,13 @@ class AltchaWidget(HiddenInput):
         "test": None,
     }
 
-    def __init__(self, **kwargs):
-        """Initialize the ALTCHA widget with configurable options."""
-        super().__init__()
-        self.options = {
-            key: kwargs.get(key, self.default_options[key])
+    def __init__(self, *args, **kwargs):
+        """Provide the field options to the widget for rendering."""
+        widget_options = {
+            key: kwargs.pop(key, self.default_options[key])
             for key in self.default_options
         }
-
-    def get_context(self, name, value, attrs):
-        context = super().get_context(name, value, attrs)
-        context["js_src_url"] = ALTCHA_JS_URL
-        context["widget"]["altcha_options"] = self.options
-        return context
-
-
-class AltchaField(forms.Field):
-    widget = AltchaWidget
-    default_error_messages = {
-        "error": _("Failed to process CAPTCHA token"),
-        "invalid": _("Invalid CAPTCHA token."),
-        "required": _("Altcha CAPTCHA token is missing."),
-    }
-
-    # TODO: This is only called once on Form declaration.
-    def __init__(self, *args, **kwargs):
-        widget_options = {}
-        # Include any other ALTCHA options passed
-        for key in AltchaWidget.default_options:
-            if key not in widget_options:
-                widget_options[key] = kwargs.pop(key, None)
-
-        # Assign the updated widget
-        kwargs["widget"] = AltchaWidget(**widget_options)
+        kwargs['widget'] = self.widget(options=widget_options)
         super().__init__(*args, **kwargs)
 
     def validate(self, value):
