@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "django-altcha"
-version = "0.1.1"
+version = "0.1.2"
 description = "Django field and widget for Altcha CAPTCHA."
 readme = "README.md"
 license = "MIT"
@@ -55,6 +55,15 @@ Documentation = "https://django-altcha.readthedocs.io/"
 Repository = "https://github.com/aboutcode-org/django-altcha.git"
 Issues = "https://github.com/aboutcode-org/django-altcha/issues"
 Changelog = "https://github.com/aboutcode-org/django-altcha/blob/main/CHANGELOG.rst"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["django_altcha"]
+
+[tool.setuptools.package-data]
+django_altcha = ["static/**", "templates/**"]
 
 [tool.ruff]
 exclude = [
