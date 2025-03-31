@@ -123,7 +123,7 @@ class AltchaField(forms.Field):
             key: kwargs.pop(key, self.default_options[key])
             for key in self.default_options
         }
-        kwargs['widget'] = self.widget(options=widget_options)
+        kwargs["widget"] = self.widget(options=widget_options)
         super().__init__(*args, **kwargs)
 
     def validate(self, value):
