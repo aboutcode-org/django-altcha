@@ -1,54 +1,55 @@
-# SPDX-License-Identifier: Apache-2.0
 #
 # Copyright (c) nexB Inc. and others. All rights reserved.
-# ScanCode is a trademark of nexB Inc.
-# SPDX-License-Identifier: Apache-2.0
-# See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
-# See https://github.com/aboutcode-org/skeleton for support or download.
-# See https://aboutcode.org for more information about nexB OSS projects.
+# SPDX-License-Identifier: MIT
+# See https://github.com/aboutcode-org/django-altcha for support or download.
+# See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
 # Python version can be specified with `$ PYTHON_EXE=python3.x make conf`
 PYTHON_EXE?=python3
-VENV=venv
-ACTIVATE?=. ${VENV}/bin/activate;
+VENV_LOCATION=.venv
+ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
+MANAGE=${VENV_LOCATION}/bin/python manage.py
+DOCS_LOCATION=./docs
 
-dev:
-	@echo "-> Configure the development envt."
-	./configure --dev
+virtualenv:
+	@echo "-> Bootstrap the virtualenv with PYTHON_EXE=${PYTHON_EXE}"
+	${PYTHON_EXE} -m venv ${VENV_LOCATION}
 
-isort:
-	@echo "-> Apply isort changes to ensure proper imports ordering"
-	${VENV}/bin/isort --sl -l 100 src tests setup.py
-
-black:
-	@echo "-> Apply black code formatter"
-	${VENV}/bin/black -l 100 src tests setup.py
-
-doc8:
-	@echo "-> Run doc8 validation"
-	@${ACTIVATE} doc8 --max-line-length 100 --ignore-path docs/_build/ --quiet docs/
-
-valid: isort black
+dev: virtualenv
+	@echo "-> Configure and install development dependencies"
+	@${ACTIVATE} pip install ${PIP_ARGS} --editable .[dev]
 
 check:
-	@echo "-> Run pycodestyle (PEP8) validation"
-	@${ACTIVATE} pycodestyle --max-line-length=100 --exclude=.eggs,venv,lib,thirdparty,docs,migrations,settings.py,.cache .
-	@echo "-> Run isort imports ordering validation"
-	@${ACTIVATE} isort --sl --check-only -l 100 setup.py src tests .
-	@echo "-> Run black validation"
-	@${ACTIVATE} black --check --check -l 100 src tests setup.py
+	@echo "-> Run Ruff linter validation (pycodestyle, bandit, isort, and more)"
+	@${ACTIVATE} ruff check
+	@echo "-> Run Ruff format validation"
+	@${ACTIVATE} ruff format --check
+
+valid:
+	@echo "-> Run Ruff format"
+	@${ACTIVATE} ruff format
+	@echo "-> Run Ruff linter"
+	@${ACTIVATE} ruff check --fix
 
 clean:
 	@echo "-> Clean the Python env"
-	./configure --clean
+	rm -rf .venv/ .*_cache/ *.egg-info/ build/ dist/
+	find . -type f -name '*.py[co]' -delete -o -type d -name __pycache__ -delete
 
 test:
 	@echo "-> Run the test suite"
-	${VENV}/bin/pytest -vvs
+	${MANAGE} test --noinput --parallel auto
+
+dist:
+	@echo "-> Build source and wheel distributions"
+	@${ACTIVATE} pip install setuptools wheel
+	@${ACTIVATE} python -m build
 
 docs:
-	rm -rf docs/_build/
-	@${ACTIVATE} sphinx-build docs/ docs/_build/
+	@echo "-> Builds the installation_and_sysadmin docs"
+	rm -rf ${DOCS_LOCATION}/_build/
+	@${ACTIVATE} pip install ".[docs]"
+	@${ACTIVATE} sphinx-build --fresh-env --fail-on-warning ${DOCS_LOCATION}/source ${DOCS_LOCATION}/_build
 
-.PHONY: conf dev check valid black isort clean test docs
+.PHONY: virtualenv dev check valid clean test dist docs
