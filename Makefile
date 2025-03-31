@@ -9,7 +9,6 @@
 PYTHON_EXE?=python3
 VENV_LOCATION=.venv
 ACTIVATE?=. ${VENV_LOCATION}/bin/activate;
-MANAGE=${VENV_LOCATION}/bin/python manage.py
 DOCS_LOCATION=./docs
 
 virtualenv:
@@ -39,7 +38,7 @@ clean:
 
 test:
 	@echo "-> Run the test suite"
-	${MANAGE} test --noinput --parallel auto
+	@${ACTIVATE} pytest
 
 dist:
 	@echo "-> Build source and wheel distributions"

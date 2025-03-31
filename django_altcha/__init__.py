@@ -38,7 +38,7 @@ class AltchaWidget(HiddenInput):
 
     def __init__(self, options, *args, **kwargs):
         """Initialize the ALTCHA widget with provided options from the field."""
-        self.options = options
+        self.options = options or {}
         super().__init__(*args, **kwargs)
 
     def get_context(self, name, value, attrs):
