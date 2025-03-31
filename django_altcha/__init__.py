@@ -1,10 +1,3 @@
-#
-# Copyright (c) nexB Inc. and others. All rights reserved.
-# SPDX-License-Identifier: MIT
-# See https://github.com/aboutcode-org/django-altcha for support or download.
-# See https://aboutcode.org for more information about AboutCode FOSS projects.
-#
-
 import json
 import secrets
 
@@ -97,14 +90,6 @@ class AltchaWidget(HiddenInput):
     def get_context(self, name, value, attrs):
         context = super().get_context(name, value, attrs)
         context["js_src_url"] = self.js_src_url
-
-        # Generate challengejson if no challengeurl is provided.
-        # A new challenge is generated each time the widget is rendered.
-        challengeurl = self.options.get("challengeurl")
-        if not challengeurl:
-            challenge = get_altcha_challenge()
-            self.options["challengejson"] = json.dumps(challenge.__dict__)
-
         context["widget"]["altcha_options"] = self.options
         return context
 
@@ -130,6 +115,7 @@ class AltchaField(forms.Field):
         super().__init__(*args, **kwargs)
 
     def validate(self, value):
+        """Validate the CAPTCHA token and verify it with the altcha HMAC key."""
         super().validate(value)
 
         if not value:
@@ -138,13 +124,12 @@ class AltchaField(forms.Field):
             )
 
         try:
-            # Verify the Altcha payload using the token and the secret HMAC key
             verified, error = altcha.verify_solution(
                 payload=value,
                 hmac_key=ALTCHA_HMAC_KEY,
                 check_expires=False,
             )
-        except Exception:  # TODO: Catch specific exception
+        except Exception:
             raise forms.ValidationError(self.error_messages["error"], code="error")
 
         if not verified:
