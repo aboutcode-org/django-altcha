@@ -22,14 +22,16 @@ ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", secrets.token_hex(32))
 ALTCHA_JS_URL = getattr(settings, "ALTCHA_JS_URL", "/static/altcha/altcha.min.js")
 
 
-def get_altcha_challenge():
+def get_altcha_challenge(max_number=None):
     """Generate and return an ALTCHA challenge."""
-    challenge = altcha.create_challenge(
-        altcha.ChallengeOptions(
-            hmac_key=ALTCHA_HMAC_KEY,
-            max_number=50000,
-        )
-    )
+    options = {
+        "hmac_key": ALTCHA_HMAC_KEY,
+    }
+
+    if max_number is not None:
+        options["max_number"] = max_number
+
+    challenge = altcha.create_challenge(altcha.ChallengeOptions(**options))
     return challenge
 
 
@@ -53,7 +55,7 @@ class AltchaWidget(HiddenInput):
         # Since the challenge must be fresh for each form rendering, it is generated
         # inside `get_context`, not `__init__`.
         if not self.options.get("challengeurl"):
-            challenge = get_altcha_challenge()
+            challenge = get_altcha_challenge(max_number=self.options.get("maxnumber"))
             self.options["challengejson"] = json.dumps(challenge.__dict__)
 
         context["widget"]["altcha_options"] = self.options
