@@ -14,7 +14,7 @@ from django.conf import settings
 from django.forms.widgets import HiddenInput
 from django.utils.translation import gettext_lazy as _
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 VERSION = __version__
 
 # Get the ALTCHA_HMAC_KEY from the settings, or generate one if not present.
