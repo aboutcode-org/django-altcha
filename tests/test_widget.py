@@ -12,7 +12,7 @@ from django.test import TestCase
 from django_altcha import AltchaWidget
 
 
-class AltchaWidgetTest(TestCase):
+class DjangoAltchaWidgetTest(TestCase):
     def test_widget_initialization_with_default_options(self):
         widget = AltchaWidget(options=None)
         self.assertNotIn("challengeurl", widget.options)
