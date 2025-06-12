@@ -38,7 +38,7 @@ clean:
 
 test:
 	@echo "-> Run the test suite"
-	@${ACTIVATE} pytest
+	@${ACTIVATE} pytest -s
 
 dist:
 	@echo "-> Build source and wheel distributions"

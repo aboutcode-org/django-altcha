@@ -5,14 +5,16 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import datetime
 import json
 import secrets
 
-import altcha
 from django import forms
 from django.conf import settings
 from django.forms.widgets import HiddenInput
 from django.utils.translation import gettext_lazy as _
+
+import altcha
 
 __version__ = "0.1.3"
 VERSION = __version__
@@ -21,11 +23,27 @@ VERSION = __version__
 ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", secrets.token_hex(32))
 ALTCHA_JS_URL = getattr(settings, "ALTCHA_JS_URL", "/static/altcha/altcha.min.js")
 
+# Challenge expiration duration in milliseconds.
+# Default to 20 minutes as per Altcha security recommendations.
+# https://altcha.org/docs/v2/security-recommendations/
+ALTCHA_CHALLENGE_EXPIRE = getattr(settings, "ALTCHA_CHALLENGE_EXPIRE", 1200000)
 
-def get_altcha_challenge(max_number=None):
-    """Generate and return an ALTCHA challenge."""
+
+def get_altcha_challenge(max_number=None, expires=None):
+    """
+    Generate and return an ALTCHA challenge.
+
+    Attributes:
+        max_number (int): Maximum number to use for the challenge.
+        expires (int): Expiration time for the challenge in milliseconds.
+
+    Returns:
+        altcha.Challenge: The generated challenge.
+    """
+    expires = expires or ALTCHA_CHALLENGE_EXPIRE
     options = {
         "hmac_key": ALTCHA_HMAC_KEY,
+        "expires": datetime.datetime.now() + datetime.timedelta(milliseconds=expires),
     }
 
     if max_number is not None:
@@ -55,7 +73,10 @@ class AltchaWidget(HiddenInput):
         # Since the challenge must be fresh for each form rendering, it is generated
         # inside `get_context`, not `__init__`.
         if not self.options.get("challengeurl"):
-            challenge = get_altcha_challenge(max_number=self.options.get("maxnumber"))
+            challenge = get_altcha_challenge(
+                max_number=self.options.get("maxnumber"),
+                expires=self.options.get("expire"),
+            )
             self.options["challengejson"] = json.dumps(challenge.__dict__)
 
         context["widget"]["altcha_options"] = self.options
@@ -81,7 +102,7 @@ class AltchaField(forms.Field):
         # Artificial delay before verification (in milliseconds, default: 0).
         "delay": None,
         # Challenge expiration duration (in milliseconds).
-        "expire": None,
+        "expire": ALTCHA_CHALLENGE_EXPIRE,
         # Enable floating UI.
         # Possible values: "auto", "top", "bottom".
         "floating": None,
@@ -141,7 +162,7 @@ class AltchaField(forms.Field):
             verified, error = altcha.verify_solution(
                 payload=value,
                 hmac_key=ALTCHA_HMAC_KEY,
-                check_expires=False,
+                check_expires=True,
             )
         except Exception:
             raise forms.ValidationError(self.error_messages["error"], code="error")
