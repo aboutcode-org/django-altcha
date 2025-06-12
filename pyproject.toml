@@ -81,3 +81,15 @@ select = [
     "I",  # isort
     "C9", # McCabe complexity
 ]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+sections = { django = ["django"] }
+section-order = [
+    "future",
+    "standard-library",
+    "django",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
