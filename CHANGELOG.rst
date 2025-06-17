@@ -4,6 +4,10 @@ Changelog
 v0.2.0 (unreleased)
 -------------------
 
+- Add a AltchaChallengeView to allow  `challengeurl` a setup.
+  This view returns a challenge as JSON to be fetched by the Altcha JS widget.
+  https://github.com/aboutcode-org/django-altcha/pull/8
+
 - Add challenge expiration support.
   Default to 20 minutes as per Altcha security recommendations.
   Can be customized through the `ALTCHA_CHALLENGE_EXPIRE` setting.

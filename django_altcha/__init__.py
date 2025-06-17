@@ -12,7 +12,11 @@ import secrets
 from django import forms
 from django.conf import settings
 from django.forms.widgets import HiddenInput
+from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from django.utils.translation import gettext_lazy as _
+from django.views import View
+from django.views.decorators.http import require_GET
 
 import altcha
 
@@ -169,3 +173,20 @@ class AltchaField(forms.Field):
 
         if not verified:
             raise forms.ValidationError(self.error_messages["invalid"], code="invalid")
+
+
+class AltchaChallengeView(View):
+    max_number = None
+    expires = None
+
+    @method_decorator(require_GET)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        # Use view's class attributes or kwargs
+        max_number = kwargs.get("max_number", self.max_number)
+        expires = kwargs.get("expires", self.expires)
+
+        challenge = get_altcha_challenge(max_number=max_number, expires=expires)
+        return JsonResponse(challenge.__dict__)
