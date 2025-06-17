@@ -1,6 +1,15 @@
 Changelog
 =========
 
+v0.2.0 (unreleased)
+-------------------
+
+- Add challenge expiration support.
+  Default to 20 minutes as per Altcha security recommendations.
+  Can be customized through the `ALTCHA_CHALLENGE_EXPIRE` setting.
+  https://altcha.org/docs/v2/security-recommendations/
+  https://github.com/aboutcode-org/django-altcha/pull/7
+
 v0.1.3 (2025-04-15)
 -------------------
 
