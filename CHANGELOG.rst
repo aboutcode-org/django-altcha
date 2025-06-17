@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v0.2.0 (unreleased)
+v0.2.0 (2025-06-17)
 -------------------
 
 - Add a AltchaChallengeView to allow  `challengeurl` a setup.
