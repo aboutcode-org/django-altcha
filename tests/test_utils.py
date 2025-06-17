@@ -18,9 +18,9 @@ mock_now = datetime(2025, 10, 10)
 class DjangoAltchaUtilsTest(TestCase):
     def test_get_altcha_challenge_max_number(self):
         challenge = get_altcha_challenge()
-        self.assertEqual(1000000, challenge.maxnumber)
+        self.assertEqual(1000000, challenge.max_number)
         challenge = get_altcha_challenge(max_number=50)
-        self.assertEqual(50, challenge.maxnumber)
+        self.assertEqual(50, challenge.max_number)
 
     @mock.patch("django_altcha.datetime.datetime")
     def test_get_altcha_challenge_expire(self, mock_datetime):
