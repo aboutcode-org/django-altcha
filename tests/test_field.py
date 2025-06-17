@@ -10,7 +10,9 @@ from unittest import mock
 from django import forms
 from django.test import TestCase
 
-from django_altcha import AltchaField, AltchaWidget
+from django_altcha import ALTCHA_CHALLENGE_EXPIRE
+from django_altcha import AltchaField
+from django_altcha import AltchaWidget
 
 
 class DjangoAltchaFieldTest(TestCase):
@@ -24,9 +26,18 @@ class DjangoAltchaFieldTest(TestCase):
         form = self.form_class()
         self.assertIsInstance(form.fields["altcha_field"].widget, AltchaWidget)
 
-    def test_altcha_field_maxnumber_option_to_widget(self):
-        altcha_field = AltchaField(maxnumber=50)
+    def test_altcha_field_widget_default_options(self):
+        altcha_field = AltchaField()
+        self.assertEqual(ALTCHA_CHALLENGE_EXPIRE, altcha_field.widget.options["expire"])
+        altcha_field = AltchaField(expire=1)
+        self.assertEqual(1, altcha_field.widget.options["expire"])
+        altcha_field = AltchaField(expire=None)
+        self.assertEqual(None, altcha_field.widget.options["expire"])
+
+    def test_altcha_field_options_to_widget(self):
+        altcha_field = AltchaField(maxnumber=50, expire=10000)
         self.assertEqual(50, altcha_field.widget.options["maxnumber"])
+        self.assertEqual(10000, altcha_field.widget.options["expire"])
 
     def test_altcha_field_with_missing_value_raises_required_error(self):
         form = self.form_class(data={})
@@ -44,7 +55,7 @@ class DjangoAltchaFieldTest(TestCase):
         mock_verify_solution.assert_called_once_with(
             payload="valid_token",
             hmac_key=mock.ANY,
-            check_expires=False,
+            check_expires=True,
         )
 
     @mock.patch("altcha.verify_solution")

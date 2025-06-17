@@ -23,15 +23,18 @@ class DjangoAltchaWidgetTest(TestCase):
         options = {
             "auto": "onload",
             "delay": 500,
+            "expire": 100000,
         }
         widget = AltchaWidget(options)
         self.assertEqual(widget.options["auto"], "onload")
         self.assertEqual(widget.options["delay"], 500)
+        self.assertEqual(widget.options["expire"], 100000)
 
     def test_widget_generates_challengejson_if_no_challengeurl(self):
         widget = AltchaWidget(options={})  # Pass an empty dictionary
         context = widget.get_context(name="test", value=None, attrs={})
-
-        challengejson = json.loads(context["widget"]["altcha_options"]["challengejson"])
+        altcha_options = context["widget"]["altcha_options"]
+        challengejson = json.loads(altcha_options["challengejson"])
         self.assertEqual("SHA-256", challengejson["algorithm"])
         self.assertEqual(64, len(challengejson["challenge"]))
+        self.assertIn("?expires=", challengejson.get("salt"))
