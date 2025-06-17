@@ -5,14 +5,27 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import base64
+import json
 from unittest import mock
 
 from django import forms
 from django.test import TestCase
+from django.test import override_settings
 
 from django_altcha import ALTCHA_CHALLENGE_EXPIRE
 from django_altcha import AltchaField
 from django_altcha import AltchaWidget
+from django_altcha import is_challenge_used
+
+TEST_CHALLENGE = "test-challenge-123"
+
+
+def make_valid_payload(challenge=TEST_CHALLENGE):
+    payload_dict = {"challenge": challenge}
+    json_str = json.dumps(payload_dict)
+    encoded_bytes = base64.b64encode(json_str.encode("utf-8"))
+    return encoded_bytes.decode("utf-8")
 
 
 class DjangoAltchaFieldTest(TestCase):
@@ -47,15 +60,26 @@ class DjangoAltchaFieldTest(TestCase):
             form.errors["altcha_field"][0], "ALTCHA CAPTCHA token is missing."
         )
 
+    @override_settings(ALTCHA_CACHE_ALIAS=None)
     @mock.patch("altcha.verify_solution")
     def test_altcha_field_validation_calls_verify_solution(self, mock_verify_solution):
+        self.assertFalse(is_challenge_used(TEST_CHALLENGE))
         mock_verify_solution.return_value = (True, None)
-        form = self.form_class(data={"altcha_field": "valid_token"})
+        valid_payload = make_valid_payload()
+        form = self.form_class(data={"altcha_field": valid_payload})
         self.assertTrue(form.is_valid())
         mock_verify_solution.assert_called_once_with(
-            payload="valid_token",
+            payload=valid_payload,
             hmac_key=mock.ANY,
             check_expires=True,
+        )
+
+        # Replay the validation using the same challenge
+        self.assertTrue(is_challenge_used(TEST_CHALLENGE))
+        form = self.form_class(data={"altcha_field": valid_payload})
+        self.assertFalse(form.is_valid())
+        self.assertEqual(
+            form.errors["altcha_field"][0], "Challenge has already been used."
         )
 
     @mock.patch("altcha.verify_solution")

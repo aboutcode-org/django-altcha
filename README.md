@@ -7,6 +7,11 @@ By default, CAPTCHA validation operates in a **fully self-hosted mode**,
 **eliminating the need for external services** while ensuring privacy and control over
 the verification process.
 
+**Django Altcha** is **secure by default**, featuring built-in 
+**protection against replay attacks** to ensure each challenge is validated only once. 
+This helps safeguard your forms from repeated or spoofed submissions without 
+requiring additional configuration.
+
 ## Installation
 
 1. **Install the package:**

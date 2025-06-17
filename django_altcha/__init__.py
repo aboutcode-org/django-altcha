@@ -5,12 +5,15 @@
 # See https://aboutcode.org for more information about AboutCode FOSS projects.
 #
 
+import base64
 import datetime
 import json
 import secrets
 
 from django import forms
 from django.conf import settings
+from django.core.cache import caches
+from django.core.cache.backends.locmem import LocMemCache
 from django.forms.widgets import HiddenInput
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -31,6 +34,40 @@ ALTCHA_JS_URL = getattr(settings, "ALTCHA_JS_URL", "/static/altcha/altcha.min.js
 # Default to 20 minutes as per Altcha security recommendations.
 # https://altcha.org/docs/v2/security-recommendations/
 ALTCHA_CHALLENGE_EXPIRE = getattr(settings, "ALTCHA_CHALLENGE_EXPIRE", 1200000)
+ALTCHA_CHALLENGE_EXPIRE_SECONDS = ALTCHA_CHALLENGE_EXPIRE // 1000
+
+
+def get_altcha_cache():
+    """
+    Returns a Django cache backend instance to be used for storing ALTCHA challenge
+    data, especially for replay attack protection.
+
+    - If the setting `ALTCHA_CACHE_ALIAS` is set, the cache with that alias
+      will be used.
+    - If not set, a local in-memory cache will be used with a timeout matching
+      the challenge expiration in seconds.
+    """
+    cache_alias = getattr(settings, "ALTCHA_CACHE_ALIAS", None)
+    if cache_alias:
+        return caches[cache_alias]
+
+    # Use the same timeout for the cache as the challenge expiration to ensure
+    # cached challenges expire in sync with their validity period.
+    params = {"timeout": ALTCHA_CHALLENGE_EXPIRE_SECONDS}
+    return LocMemCache(name="altcha_local", params=params)
+
+
+_altcha_cache = get_altcha_cache()
+
+
+def is_challenge_used(challenge):
+    """Check if a challenge has already been used."""
+    return _altcha_cache.get(key=challenge) is not None
+
+
+def mark_challenge_used(challenge, timeout):
+    """Mark a challenge as used by storing it in the cache with a timeout."""
+    _altcha_cache.set(key=challenge, value=True, timeout=timeout)
 
 
 def get_altcha_challenge(max_number=None, expires=None):
@@ -93,6 +130,7 @@ class AltchaField(forms.Field):
         "error": _("Failed to process CAPTCHA token"),
         "invalid": _("Invalid CAPTCHA token."),
         "required": _("ALTCHA CAPTCHA token is missing."),
+        "replay": _("Challenge has already been used."),
     }
     default_options = {
         # URL of your server to fetch the challenge from.
@@ -173,6 +211,23 @@ class AltchaField(forms.Field):
 
         if not verified:
             raise forms.ValidationError(self.error_messages["invalid"], code="invalid")
+
+        self.replay_attack_protection(payload=value)
+
+    def replay_attack_protection(self, payload):
+        """Protect against replay attacks by ensuring each challenge is single-use."""
+        try:
+            # Decode payload from base64 and parse JSON to extract the challenge
+            payload_data = json.loads(base64.b64decode(payload).decode())
+            challenge = payload_data["challenge"]
+        except Exception:
+            raise forms.ValidationError(self.error_messages["error"], code="error")
+
+        if is_challenge_used(challenge):
+            raise forms.ValidationError(self.error_messages["replay"], code="invalid")
+
+        # Mark as used for the same duration as challenge expiration
+        mark_challenge_used(challenge, timeout=ALTCHA_CHALLENGE_EXPIRE_SECONDS)
 
 
 class AltchaChallengeView(View):
