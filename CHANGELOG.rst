@@ -4,6 +4,22 @@ Changelog
 v0.2.0 (2025-06-17)
 -------------------
 
+Special thanks to Alex Vandiver alexmv@zulip.com for reporting these issues.
+
+**Important Security Note:**
+If you have previously set and used a static ``ALTCHA_HMAC_KEY``,
+you **must rotate this key** as part of upgrading to this release.
+
+Earlier versions of ``django-altcha`` accepted challenges that were generated without
+an expiration (``expires``) value.
+This allowed older challenges to remain valid indefinitely.
+As a result, any attacker with access to an old challenge could reuse it to bypass
+CAPTCHA validation.
+
+To fully benefit from the security improvements in this release,
+you must also **invalidate any existing challenges** by rotating the HMAC key used
+to generate and verify them.
+
 - Add a AltchaChallengeView to allow  `challengeurl` a setup.
   This view returns a challenge as JSON to be fetched by the Altcha JS widget.
   https://github.com/aboutcode-org/django-altcha/pull/9
