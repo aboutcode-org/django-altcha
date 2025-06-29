@@ -27,6 +27,7 @@ __version__ = "0.2.0"
 VERSION = __version__
 
 # Get the ALTCHA_HMAC_KEY from the settings, or generate one if not present.
+ALTCHA_ENABLED = getattr(settings, "ALTCHA_ENABLED", True)
 ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", secrets.token_hex(32))
 ALTCHA_JS_URL = getattr(settings, "ALTCHA_JS_URL", "/static/altcha/altcha.min.js")
 
@@ -193,6 +194,10 @@ class AltchaField(forms.Field):
 
     def validate(self, value):
         """Validate the CAPTCHA token and verify its authenticity."""
+        # skip validation if altcha is disabled altogether
+        if not ALTCHA_ENABLED:
+            return
+
         super().validate(value)
 
         if not value:
