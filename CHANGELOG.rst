@@ -1,6 +1,14 @@
 Changelog
 =========
 
+v0.3.0 (unreleased)
+-------------------
+
+- Add the ``ALTCHA_HMAC_KEY`` setup as part of the installation.
+  A DeprecationWarning is raised when the ``ALTCHA_HMAC_KEY`` is not explicitly defined.
+  Providing the ``ALTCHA_HMAC_KEY`` will be mandatory in future release.
+  https://github.com/aboutcode-org/django-altcha/issues/15
+
 v0.2.0 (2025-06-17)
 -------------------
 

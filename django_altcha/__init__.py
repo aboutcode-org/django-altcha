@@ -9,6 +9,7 @@ import base64
 import datetime
 import json
 import secrets
+import warnings
 
 from django import forms
 from django.conf import settings
@@ -26,8 +27,21 @@ import altcha
 __version__ = "0.2.0"
 VERSION = __version__
 
-# Get the ALTCHA_HMAC_KEY from the settings, or generate one if not present.
-ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", secrets.token_hex(32))
+ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", None)
+if not ALTCHA_HMAC_KEY:
+    warnings.warn(
+        (
+            "ALTCHA_HMAC_KEY is not set in settings. "
+            "A random key is being generated, which is insecure and "
+            "may lead to signature mismatches in multi-worker deployments. "
+            "This fallback behavior will be removed in a future release. "
+            "Set ALTCHA_HMAC_KEY in your Django settings."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    ALTCHA_HMAC_KEY = secrets.token_hex(32)
+
 ALTCHA_JS_URL = getattr(settings, "ALTCHA_JS_URL", "/static/altcha/altcha.min.js")
 
 # Challenge expiration duration in milliseconds.
