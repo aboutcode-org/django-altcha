@@ -31,6 +31,22 @@ requiring additional configuration.
    ]
    ```
 
+3. **Set your secret HMAC key:**
+   
+   This key is used to HMAC-sign ALTCHA challenges and **must be kept secret**.
+   Treat it like a password: use a secure, 64-character hex string.
+
+   Update your Django project's `settings.py`:
+
+   ```python
+   ALTCHA_HMAC_KEY="your_secret_hmac_key"
+   ```
+
+> [!NOTE]
+> You can generate a new secured HMAC key using:
+> ``python -c "import secrets; print(secrets.token_hex(64))"``
+
+
 ## Usage
 
 ### Adding the CAPTCHA Field to Your Form
