@@ -124,6 +124,27 @@ class MyForm(forms.Form):
 > registering the view.
 > For example: ``AltchaChallengeView.as_view(max_number=2000000)``
 
+## Settings
+
+### ALTCHA_HMAC_KEY
+
+**Required.** This key is used to HMAC-sign ALTCHA challenges and **must be kept secret**.
+
+### ALTCHA_JS_URL
+
+URL location of the Altcha JavaScript file.
+Default to the django-altcha embedded file.
+
+### ALTCHA_VERIFICATION_ENABLED
+
+Set to `False` to skip Altcha validation altogether.
+
+### ALTCHA_CHALLENGE_EXPIRE
+
+Challenge expiration duration in milliseconds.
+Default to 20 minutes as per Altcha security recommendations.
+See https://altcha.org/docs/v2/security-recommendations/
+
 ## Contributing
 
 We welcome contributions to improve this library.
