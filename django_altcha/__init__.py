@@ -27,7 +27,8 @@ import altcha
 __version__ = "0.2.0"
 VERSION = __version__
 
-ALTCHA_ENABLED = getattr(settings, "ALTCHA_ENABLED", True)
+# Set to `False` to skip Altcha validation altogether.
+ALTCHA_VERIFICATION_ENABLED = getattr(settings, "ALTCHA_VERIFICATION_ENABLED", True)
 
 ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", None)
 if not ALTCHA_HMAC_KEY:
@@ -209,8 +210,7 @@ class AltchaField(forms.Field):
 
     def validate(self, value):
         """Validate the CAPTCHA token and verify its authenticity."""
-        # skip validation if altcha is disabled altogether
-        if not ALTCHA_ENABLED:
+        if not ALTCHA_VERIFICATION_ENABLED:
             return
 
         super().validate(value)

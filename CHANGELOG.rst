@@ -9,6 +9,9 @@ v0.3.0 (unreleased)
   Providing the ``ALTCHA_HMAC_KEY`` will be mandatory in future release.
   https://github.com/aboutcode-org/django-altcha/issues/15
 
+- Add a ``ALTCHA_VERIFICATION_ENABLED`` setting, default to ``True``.
+  This setting, when set to ``False``, allows to skip Altcha validation altogether.
+
 v0.2.0 (2025-06-17)
 -------------------
 
