@@ -1,7 +1,7 @@
 Changelog
 =========
 
-v0.3.0 (unreleased)
+v0.3.0 (2025-07-25)
 -------------------
 
 - Add the ``ALTCHA_HMAC_KEY`` setup as part of the installation.
