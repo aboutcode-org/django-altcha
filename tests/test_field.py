@@ -10,6 +10,7 @@ import json
 from unittest import mock
 
 from django import forms
+from django.forms import ValidationError
 from django.test import TestCase
 from django.test import override_settings
 
@@ -51,6 +52,14 @@ class DjangoAltchaFieldTest(TestCase):
         altcha_field = AltchaField(maxnumber=50, expire=10000)
         self.assertEqual(50, altcha_field.widget.options["maxnumber"])
         self.assertEqual(10000, altcha_field.widget.options["expire"])
+
+    def test_altcha_field_validate_verification_enabled_setting(self):
+        altcha_field = AltchaField()
+        with self.assertRaises(ValidationError):
+            altcha_field.validate("a_value")
+
+        with mock.patch("django_altcha.ALTCHA_VERIFICATION_ENABLED", False):
+            self.assertIsNone(altcha_field.validate("a_value"))
 
     def test_altcha_field_with_missing_value_raises_required_error(self):
         form = self.form_class(data={})
