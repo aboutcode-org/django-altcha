@@ -150,16 +150,30 @@ class AltchaField(forms.Field):
         "replay": _("Challenge has already been used."),
     }
     default_options = {
+        ## Required options:
+        #
         # URL of your server to fetch the challenge from.
         "challengeurl": None,
-        # JSON-encoded challenge data
-        # (use instead of challengeurl to avoid HTTP request).
+        # JSON-encoded challenge data.
+        # If avoiding an HTTP request to challengeurl, provide the data here.
         "challengejson": None,
+        ## Additional options:
+        #
         # Automatically verify without user interaction.
         # Possible values: "off", "onfocus", "onload", "onsubmit".
         "auto": None,
+        # Whether to include credentials with the challenge request
+        # Possible values: "omit", "same-origin", "include".
+        "credentials": None,
+        # A custom fetch function for retrieving the challenge.
+        # Accepts `url: string` and `init: RequestInit` as arguments and must return a
+        # `Response`.
+        "customfetch": None,
         # Artificial delay before verification (in milliseconds, default: 0).
         "delay": None,
+        # If true, prevents the code-challenge input from automatically receiving
+        # focus on render (defaults to "false").
+        "disableautofocus": None,
         # Challenge expiration duration (in milliseconds).
         "expire": ALTCHA_CHALLENGE_EXPIRE,
         # Enable floating UI.
@@ -172,14 +186,27 @@ class AltchaField(forms.Field):
         "floatingoffset": None,
         # Enable a “persistent” mode to keep the widget visible under specific
         # conditions.
-        # Possible values: "true", "focus".
+        # Possible values: "true", "false", "focus".
         "floatingpersist": None,
         # Hide the footer (ALTCHA link).
         "hidefooter": None,
         # Hide the ALTCHA logo.
         "hidelogo": None,
+        # The checkbox id attribute.
+        # Useful for multiple instances of the widget on the same page.
+        "id": None,
+        # The ISO alpha-2 code of the language to use
+        # (the language file be imported from `altcha/i18n/*`).
+        "language": None,
         # Max number to iterate to (default: 1,000,000).
         "maxnumber": None,
+        # Name of the hidden field containing the payload (defaults to "altcha").
+        "name": None,
+        # Enables overlay UI mode (automatically sets `auto="onsubmit"`).
+        "overlay": None,
+        # CSS selector of the HTML element to display in the overlay modal before the
+        # widget.
+        "overlaycontent": None,
         # JSON-encoded translation strings for customization.
         "strings": None,
         # Automatically re-fetch and re-validate when the challenge expires
@@ -190,6 +217,14 @@ class AltchaField(forms.Field):
         "workers": None,
         # URL of the Worker script (default: ./worker.js, only for external builds).
         "workerurl": None,
+        # Data Obfuscation options:
+        #
+        # The obfuscated data provided as a base64-encoded string (requires
+        # altcha/obfuscation plugin).
+        # Use only without challengeurl/challengejson.
+        "obfuscated": None,
+        ## Development / testing options:
+        #
         # Print log messages in the console (for debugging).
         "debug": None,
         # Causes verification to always fail with a "mock" error.
