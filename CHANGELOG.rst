@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v0.4.0 (2025-10-21)
+-------------------
+
+- Upgrade bundled JS library to latest ALTCHA v2.2.4 release.
+  https://github.com/aboutcode-org/django-altcha/pull/20
+
+- Add support for Python 3.14
+  https://github.com/aboutcode-org/django-altcha/pull/21
+
+- Add support for providing dict values to AltchaWidget.
+  https://github.com/aboutcode-org/django-altcha/pull/20
+
 v0.3.0 (2025-07-25)
 -------------------
 
