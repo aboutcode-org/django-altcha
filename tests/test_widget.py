@@ -38,3 +38,18 @@ class DjangoAltchaWidgetTest(TestCase):
         self.assertEqual("SHA-256", challengejson["algorithm"])
         self.assertEqual(64, len(challengejson["challenge"]))
         self.assertIn("?expires=", challengejson.get("salt"))
+
+    def test_widget_rendering_with_complex_options(self):
+        options = {
+            "strings": {
+                "label": "Label",
+                "verified": "Verified",
+            }
+        }
+        widget = AltchaWidget(options)
+        rendered_widget_html = widget.render("name", "value")
+        expected = (
+            'strings="{&quot;label&quot;: &quot;Label&quot;, '
+            '&quot;verified&quot;: &quot;Verified&quot;}"'
+        )
+        self.assertIn(expected, rendered_widget_html)

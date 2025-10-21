@@ -137,8 +137,21 @@ class AltchaWidget(HiddenInput):
             )
             self.options["challengejson"] = json.dumps(challenge.__dict__)
 
-        context["widget"]["altcha_options"] = self.options
+        # JSON-encode list/dict values before setting in context
+        encoded_options = self.encode_values(self.options)
+        context["widget"]["altcha_options"] = encoded_options
+
         return context
+
+    @staticmethod
+    def encode_values(data):
+        """Return a shallow copy of `data` where lists and dicts are JSON encoded."""
+        encoded = {}
+        for key, value in data.items():
+            if isinstance(value, (list, dict)):
+                value = json.dumps(value)
+            encoded[key] = value
+        return encoded
 
 
 class AltchaField(forms.Field):
