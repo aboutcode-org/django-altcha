@@ -46,6 +46,8 @@ if not ALTCHA_HMAC_KEY:
     ALTCHA_HMAC_KEY = secrets.token_hex(32)
 
 ALTCHA_JS_URL = getattr(settings, "ALTCHA_JS_URL", "/static/altcha/altcha.min.js")
+ALTCHA_INCLUDE_TRANSLATIONS = getattr(settings, "ALTCHA_INCLUDE_TRANSLATIONS", False)
+ALTCHA_JS_TRANSLATIONS = "/static/altcha/dist_i18n/all.min.js"
 
 # Challenge expiration duration in milliseconds.
 # Default to 20 minutes as per Altcha security recommendations.
@@ -123,6 +125,8 @@ class AltchaWidget(HiddenInput):
         """Generate the widget context, including ALTCHA JS URL and challenge."""
         context = super().get_context(name, value, attrs)
         context["js_src_url"] = ALTCHA_JS_URL
+        context["include_trans"] = ALTCHA_INCLUDE_TRANSLATIONS
+        context["js_trans"] = ALTCHA_JS_TRANSLATIONS
 
         # If a `challengeurl` is provided, the challenge will be fetched from this URL.
         # This can be a local Django view or an external API endpoint.
