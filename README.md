@@ -135,6 +135,10 @@ class MyForm(forms.Form):
 URL location of the Altcha JavaScript file.
 Default to the django-altcha embedded file.
 
+### ALTCHA_INCLUDE_TRANSLATIONS
+
+Include Altcha [translations](https://altcha.org/docs/v2/widget-integration/#internationalization-i18n). `False` by default. 
+
 ### ALTCHA_VERIFICATION_ENABLED
 
 Set to `False` to skip Altcha validation altogether.
