@@ -65,4 +65,4 @@ class DjangoAltchaWidgetTest(TestCase):
     def test_js_translation_not_included_if_disabled(self):
         widget = AltchaWidget(options=None)
         rendered_widget_html = widget.render("name", "value")
-        self.assertNotIn('/static/altcha/dist_i18n/all.min.js"', rendered_widget_html)
+        self.assertNotIn("/static/altcha/dist_i18n/all.min.js", rendered_widget_html)
