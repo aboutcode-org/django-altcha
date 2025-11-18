@@ -6,6 +6,7 @@
 #
 
 import json
+from unittest import mock
 
 from django.test import TestCase
 
@@ -53,3 +54,15 @@ class DjangoAltchaWidgetTest(TestCase):
             '&quot;verified&quot;: &quot;Verified&quot;}"'
         )
         self.assertIn(expected, rendered_widget_html)
+
+    @mock.patch("django_altcha.ALTCHA_INCLUDE_TRANSLATIONS", True)
+    def test_js_translation_included_if_enabled(self):
+        widget = AltchaWidget(options=None)
+        rendered_widget_html = widget.render("name", "value")
+        self.assertIn("/static/altcha/dist_i18n/all.min.js", rendered_widget_html)
+
+    @mock.patch("django_altcha.ALTCHA_INCLUDE_TRANSLATIONS", False)
+    def test_js_translation_not_included_if_disabled(self):
+        widget = AltchaWidget(options=None)
+        rendered_widget_html = widget.render("name", "value")
+        self.assertNotIn('/static/altcha/dist_i18n/all.min.js"', rendered_widget_html)
