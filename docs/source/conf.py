@@ -34,6 +34,7 @@ extensions = [
     "sphinx_rtd_dark_mode",
     "sphinx.ext.extlinks",
     "sphinx_copybutton",
+    "myst_parser",
 ]
 
 
@@ -75,7 +76,7 @@ master_doc = "index"
 
 html_context = {
     "display_github": True,
-    "github_user": "nexB",
+    "github_user": "aboutcode-org",
     "github_repo": "django-altcha",
     "github_version": "develop",  # branch
     "conf_py_path": "/docs/source/",  # path in the checkout to the docs root
