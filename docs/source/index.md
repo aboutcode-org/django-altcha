@@ -7,7 +7,8 @@ By default, CAPTCHA validation operates in a **fully self-hosted mode**,
 **eliminating the need for external services** while ensuring privacy and control over
 the verification process.
 
-```{include} ../../README.md```
+```{include} ../../README.md
+```
 
 ## Indices and tables
 
