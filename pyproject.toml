@@ -48,6 +48,7 @@ docs = [
     "sphinx-autobuild",
     "sphinx-rtd-dark-mode>=1.3.0",
     "sphinx-copybutton",
+    "myst-parser",
 ]
 
 [project.urls]

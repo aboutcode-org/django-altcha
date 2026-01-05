@@ -137,7 +137,6 @@ single-process deployments.
 > The default in-memory cache is **not shared across workers**. If you run multiple
 > workers (e.g., with gunicorn or uwsgi), you must configure a shared cache backend
 > using the `ALTCHA_CACHE_ALIAS` setting. 
-> See the [Settings](#altcha_cache_alias) section for details.
 
 ## Settings
 
@@ -225,4 +224,5 @@ Feel free to submit issues or pull requests!
 ## License
 
 This project is licensed under the **MIT License**.
-See the [LICENSE](./LICENSE) file for details.
+See the [LICENSE](https://github.com/aboutcode-org/django-altcha/blob/main/LICENSE) 
+file for details.
