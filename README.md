@@ -132,8 +132,20 @@ class MyForm(forms.Form):
 
 ### ALTCHA_JS_URL
 
-URL location of the Altcha JavaScript file.
-Default to the django-altcha embedded file.
+URL of the Altcha JavaScript file.
+Defaults to the bundled django-altcha file.
+
+### ALTCHA_INCLUDE_TRANSLATIONS
+
+Whether to include [Altcha translations](https://altcha.org/docs/v2/widget-integration/#internationalization-i18n).
+Defaults to `False`.
+
+### ALTCHA_JS_TRANSLATIONS_URL
+
+URL of the Altcha translations JavaScript file.
+Defaults to the bundled django-altcha file.
+
+Only loaded when `ALTCHA_INCLUDE_TRANSLATIONS` is `True`.
 
 ### ALTCHA_VERIFICATION_ENABLED
 
