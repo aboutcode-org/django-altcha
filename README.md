@@ -46,7 +46,6 @@ requiring additional configuration.
 > You can generate a new secured HMAC key using:
 > ``python -c "import secrets; print(secrets.token_hex(64))"``
 
-
 ## Usage
 
 ### Adding the CAPTCHA Field to Your Form
@@ -124,11 +123,77 @@ class MyForm(forms.Form):
 > registering the view.
 > For example: ``AltchaChallengeView.as_view(max_number=2000000)``
 
+### Replay Attack Protection
+
+Django Altcha **automatically protects against replay attacks** by ensuring each 
+challenge can only be used once.
+When a challenge is successfully validated, it is stored in a
+cache and any subsequent attempt to reuse the same challenge will be rejected.
+
+This protection is enabled by default and requires no additional configuration for
+single-process deployments.
+
+> [!IMPORTANT]
+> The default in-memory cache is **not shared across workers**. If you run multiple
+> workers (e.g., with gunicorn or uwsgi), you must configure a shared cache backend
+> using the `ALTCHA_CACHE_ALIAS` setting. 
+> See the [Settings](#altcha_cache_alias) section for details.
+
 ## Settings
 
 ### ALTCHA_HMAC_KEY
 
 **Required.** This key is used to HMAC-sign ALTCHA challenges and **must be kept secret**.
+
+### ALTCHA_CACHE_ALIAS
+
+Cache alias used for replay attack protection.
+
+By default, challenges are stored in a local in-memory cache to prevent reuse.
+This works well for single-process deployments, but **does not protect against
+replay attacks in multi-worker setups** (e.g., gunicorn or uwsgi with multiple workers).
+
+For production deployments with multiple workers, configure a shared cache backend:
+
+**Using Redis or Memcached:**
+
+```python
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379',
+    }
+}
+ALTCHA_CACHE_ALIAS = 'default'
+```
+
+**Using Database Caching:**
+
+If you prefer not to set up Redis or Memcached, 
+[Django's built-in database cache](https://docs.djangoproject.com/en/dev/topics/cache/#database-caching)
+is a simple alternative:
+
+```python
+CACHES = {
+    'altcha': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'altcha_cache',
+    }
+}
+ALTCHA_CACHE_ALIAS = 'altcha'
+```
+
+Then create the cache table:
+
+```bash
+python manage.py createcachetable
+```
+
+### ALTCHA_CHALLENGE_EXPIRE
+
+Challenge expiration duration in milliseconds.
+Defaults to 20 minutes as per 
+[Altcha security recommendations](https://altcha.org/docs/v2/security-recommendations/).
 
 ### ALTCHA_JS_URL
 
@@ -150,12 +215,7 @@ Only loaded when `ALTCHA_INCLUDE_TRANSLATIONS` is `True`.
 ### ALTCHA_VERIFICATION_ENABLED
 
 Set to `False` to skip Altcha validation altogether.
-
-### ALTCHA_CHALLENGE_EXPIRE
-
-Challenge expiration duration in milliseconds.
-Default to 20 minutes as per Altcha security recommendations.
-See https://altcha.org/docs/v2/security-recommendations/
+Defaults to `True`.
 
 ## Contributing
 
