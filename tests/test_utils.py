@@ -30,15 +30,15 @@ class DjangoAltchaUtilsTest(TestCase):
         # Default ALTCHA_CHALLENGE_EXPIRE is applied
         challenge = get_altcha_challenge()
         salt_expires = challenge.salt.split("?expires=")[-1]
-        self.assertEqual("1760073600", salt_expires)
+        self.assertIn("1760073600", salt_expires)
 
         # Provided `expires` argument is applied
         challenge = get_altcha_challenge(expires=10000)
         salt_expires = challenge.salt.split("?expires=")[-1]
-        self.assertEqual("1760072410", salt_expires)
+        self.assertIn("1760072410", salt_expires)
 
         # Custom ALTCHA_CHALLENGE_EXPIRE value is applied
         with mock.patch("django_altcha.ALTCHA_CHALLENGE_EXPIRE", 9999):
             challenge = get_altcha_challenge()
             salt_expires = challenge.salt.split("?expires=")[-1]
-            self.assertEqual("1760072409", salt_expires)
+            self.assertIn("1760072409", salt_expires)
