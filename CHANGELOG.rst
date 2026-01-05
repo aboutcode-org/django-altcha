@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v0.9.0 (2026-01-05)
+-------------------
+
+- Upgrade bundled JS library to latest ALTCHA v2.3.0 release.
+  Upgrade altcha-lib-py to v1.0.0 release.
+  https://github.com/aboutcode-org/django-altcha/pull/25
+
+- Add support for ALTCHA translations.
+  https://github.com/aboutcode-org/django-altcha/pull/23
+
+- Add replay attack protection documentation.
+  https://github.com/aboutcode-org/django-altcha/pull/26
+
 v0.4.0 (2025-10-21)
 -------------------
 
