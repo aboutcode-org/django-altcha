@@ -1,6 +1,12 @@
 Changelog
 =========
 
+v0.9.1 (2026-03-05)
+-------------------
+
+- fix: replace altcha.i18n.js bundle by proper dist_i18n/all.js
+  https://github.com/aboutcode-org/django-altcha/issues/28
+
 v0.9.0 (2026-01-05)
 -------------------
 
