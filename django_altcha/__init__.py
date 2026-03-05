@@ -24,7 +24,7 @@ from django.views.decorators.http import require_GET
 
 import altcha
 
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 VERSION = __version__
 
 # Set to `False` to skip Altcha validation altogether.
