@@ -8,15 +8,24 @@
 from datetime import datetime
 from unittest import mock
 
+from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase
 from django.test import override_settings
 
 from django_altcha import get_altcha_challenge
+from django_altcha import get_hmac_key
 
 mock_now = datetime(2025, 10, 10)
 
 
 class DjangoAltchaUtilsTest(TestCase):
+    def test_get_hmac_key(self):
+        self.assertEqual("altcha-insecure-hmac-0123456789abcdef", get_hmac_key())
+
+        with override_settings(ALTCHA_HMAC_KEY=None):
+            with self.assertRaises(ImproperlyConfigured):
+                get_hmac_key()
+
     def test_get_altcha_challenge_max_number(self):
         challenge = get_altcha_challenge()
         self.assertEqual(1000000, challenge.max_number)
