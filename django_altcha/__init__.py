@@ -12,7 +12,6 @@ import secrets
 import warnings
 
 from django import forms
-from django.conf import settings
 from django.core.cache import caches
 from django.core.cache.backends.locmem import LocMemCache
 from django.forms.widgets import HiddenInput
@@ -24,13 +23,13 @@ from django.views.decorators.http import require_GET
 
 import altcha
 
+from .conf import get_setting
+
 __version__ = "0.9.1"
 VERSION = __version__
 
-# Set to `False` to skip Altcha validation altogether.
-ALTCHA_VERIFICATION_ENABLED = getattr(settings, "ALTCHA_VERIFICATION_ENABLED", True)
 
-ALTCHA_HMAC_KEY = getattr(settings, "ALTCHA_HMAC_KEY", None)
+ALTCHA_HMAC_KEY = get_setting("ALTCHA_HMAC_KEY")
 if not ALTCHA_HMAC_KEY:
     warnings.warn(
         (
@@ -45,17 +44,9 @@ if not ALTCHA_HMAC_KEY:
     )
     ALTCHA_HMAC_KEY = secrets.token_hex(32)
 
-ALTCHA_JS_URL = getattr(settings, "ALTCHA_JS_URL", "/static/altcha/altcha.min.js")
-ALTCHA_JS_TRANSLATIONS_URL = getattr(
-    settings, "ALTCHA_JS_TRANSLATIONS_URL", "/static/altcha/dist_i18n/all.min.js"
-)
-ALTCHA_INCLUDE_TRANSLATIONS = getattr(settings, "ALTCHA_INCLUDE_TRANSLATIONS", False)
 
-# Challenge expiration duration in milliseconds.
-# Default to 20 minutes as per Altcha security recommendations.
-# https://altcha.org/docs/v2/security-recommendations/
-ALTCHA_CHALLENGE_EXPIRE = getattr(settings, "ALTCHA_CHALLENGE_EXPIRE", 1200000)
-ALTCHA_CHALLENGE_EXPIRE_SECONDS = ALTCHA_CHALLENGE_EXPIRE // 1000
+def get_challenge_expire_seconds():
+    return get_setting("ALTCHA_CHALLENGE_EXPIRE") // 1000
 
 
 def get_altcha_cache():
@@ -68,13 +59,13 @@ def get_altcha_cache():
     - If not set, a local in-memory cache will be used with a timeout matching
       the challenge expiration in seconds.
     """
-    cache_alias = getattr(settings, "ALTCHA_CACHE_ALIAS", None)
+    cache_alias = get_setting("ALTCHA_CACHE_ALIAS")
     if cache_alias:
         return caches[cache_alias]
 
     # Use the same timeout for the cache as the challenge expiration to ensure
     # cached challenges expire in sync with their validity period.
-    params = {"timeout": ALTCHA_CHALLENGE_EXPIRE_SECONDS}
+    params = {"timeout": get_challenge_expire_seconds()}
     return LocMemCache(name="altcha_local", params=params)
 
 
@@ -102,7 +93,7 @@ def get_altcha_challenge(max_number=None, expires=None):
     Returns:
         altcha.Challenge: The generated challenge.
     """
-    expires = expires or ALTCHA_CHALLENGE_EXPIRE
+    expires = expires or get_setting("ALTCHA_CHALLENGE_EXPIRE")
     options = {
         "hmac_key": ALTCHA_HMAC_KEY,
         "expires": datetime.datetime.now() + datetime.timedelta(milliseconds=expires),
@@ -126,9 +117,9 @@ class AltchaWidget(HiddenInput):
     def get_context(self, name, value, attrs):
         """Generate the widget context, including ALTCHA JS URL and challenge."""
         context = super().get_context(name, value, attrs)
-        context["js_altcha_url"] = ALTCHA_JS_URL
-        context["js_translations_url"] = ALTCHA_JS_TRANSLATIONS_URL
-        context["include_translations"] = ALTCHA_INCLUDE_TRANSLATIONS
+        context["js_altcha_url"] = get_setting("ALTCHA_JS_URL")
+        context["js_translations_url"] = get_setting("ALTCHA_JS_TRANSLATIONS_URL")
+        context["include_translations"] = get_setting("ALTCHA_INCLUDE_TRANSLATIONS")
 
         # If a `challengeurl` is provided, the challenge will be fetched from this URL.
         # This can be a local Django view or an external API endpoint.
@@ -194,16 +185,16 @@ class AltchaField(forms.Field):
         # focus on render (defaults to "false").
         "disableautofocus": None,
         # Challenge expiration duration (in milliseconds).
-        "expire": ALTCHA_CHALLENGE_EXPIRE,
+        "expire": None,
         # Enable floating UI.
         # Possible values: "auto", "top", "bottom".
         "floating": None,
-        # CSS selector of the “anchor” to which the floating UI is attached.
+        # CSS selector of the "anchor" to which the floating UI is attached.
         # Default: submit button in the related form.
         "floatinganchor": None,
         # Y offset from the anchor element for the floating UI (in pixels, default: 12).
         "floatingoffset": None,
-        # Enable a “persistent” mode to keep the widget visible under specific
+        # Enable a "persistent" mode to keep the widget visible under specific
         # conditions.
         # Possible values: "true", "false", "focus".
         "floatingpersist": None,
@@ -248,7 +239,7 @@ class AltchaField(forms.Field):
         "debug": None,
         # Causes verification to always fail with a "mock" error.
         "mockerror": None,
-        # Generates a “mock” challenge within the widget, bypassing the request to
+        # Generates a "mock" challenge within the widget, bypassing the request to
         # challengeurl.
         "test": None,
     }
@@ -264,7 +255,7 @@ class AltchaField(forms.Field):
 
     def validate(self, value):
         """Validate the CAPTCHA token and verify its authenticity."""
-        if not ALTCHA_VERIFICATION_ENABLED:
+        if not get_setting("ALTCHA_VERIFICATION_ENABLED"):
             return
 
         super().validate(value)
@@ -301,7 +292,7 @@ class AltchaField(forms.Field):
             raise forms.ValidationError(self.error_messages["replay"], code="invalid")
 
         # Mark as used for the same duration as challenge expiration
-        mark_challenge_used(challenge, timeout=ALTCHA_CHALLENGE_EXPIRE_SECONDS)
+        mark_challenge_used(challenge, timeout=get_challenge_expire_seconds())
 
 
 class AltchaChallengeView(View):
