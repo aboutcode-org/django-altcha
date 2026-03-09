@@ -8,12 +8,11 @@
 import base64
 import datetime
 import json
-import secrets
-import warnings
 
 from django import forms
 from django.core.cache import caches
 from django.core.cache.backends.locmem import LocMemCache
+from django.core.exceptions import ImproperlyConfigured
 from django.forms.widgets import HiddenInput
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -29,20 +28,12 @@ __version__ = "0.9.1"
 VERSION = __version__
 
 
-ALTCHA_HMAC_KEY = get_setting("ALTCHA_HMAC_KEY")
-if not ALTCHA_HMAC_KEY:
-    warnings.warn(
-        (
-            "ALTCHA_HMAC_KEY is not set in settings. "
-            "A random key is being generated, which is insecure and "
-            "may lead to signature mismatches in multi-worker deployments. "
-            "This fallback behavior will be removed in a future release. "
-            "Set ALTCHA_HMAC_KEY in your Django settings."
-        ),
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    ALTCHA_HMAC_KEY = secrets.token_hex(32)
+def get_hmac_key():
+    """Return the HMAC key, raising if not configured."""
+    hmac_key = get_setting("ALTCHA_HMAC_KEY")
+    if not hmac_key:
+        raise ImproperlyConfigured("The ALTCHA_HMAC_KEY setting must be provided.")
+    return hmac_key
 
 
 def get_challenge_expire_seconds():
@@ -95,7 +86,7 @@ def get_altcha_challenge(max_number=None, expires=None):
     """
     expires = expires or get_setting("ALTCHA_CHALLENGE_EXPIRE")
     options = {
-        "hmac_key": ALTCHA_HMAC_KEY,
+        "hmac_key": get_hmac_key(),
         "expires": datetime.datetime.now() + datetime.timedelta(milliseconds=expires),
     }
 
@@ -268,7 +259,7 @@ class AltchaField(forms.Field):
         try:
             verified, error = altcha.verify_solution(
                 payload=value,
-                hmac_key=ALTCHA_HMAC_KEY,
+                hmac_key=get_hmac_key(),
                 check_expires=True,
             )
         except Exception:
