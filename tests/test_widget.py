@@ -6,9 +6,9 @@
 #
 
 import json
-from unittest import mock
 
 from django.test import TestCase
+from django.test import override_settings
 
 from django_altcha import AltchaWidget
 
@@ -55,14 +55,14 @@ class DjangoAltchaWidgetTest(TestCase):
         )
         self.assertIn(expected, rendered_widget_html)
 
-    @mock.patch("django_altcha.ALTCHA_INCLUDE_TRANSLATIONS", True)
     def test_js_translation_included_if_enabled(self):
         widget = AltchaWidget(options=None)
-        rendered_widget_html = widget.render("name", "value")
-        self.assertIn("/static/altcha/dist_i18n/all.min.js", rendered_widget_html)
+        expected_js = "/static/altcha/dist_i18n/all.min.js"
 
-    @mock.patch("django_altcha.ALTCHA_INCLUDE_TRANSLATIONS", False)
-    def test_js_translation_not_included_if_disabled(self):
-        widget = AltchaWidget(options=None)
-        rendered_widget_html = widget.render("name", "value")
-        self.assertNotIn("/static/altcha/dist_i18n/all.min.js", rendered_widget_html)
+        with override_settings(ALTCHA_INCLUDE_TRANSLATIONS=True):
+            rendered_widget_html = widget.render("name", "value")
+            self.assertIn(expected_js, rendered_widget_html)
+
+        with override_settings(ALTCHA_INCLUDE_TRANSLATIONS=False):
+            rendered_widget_html = widget.render("name", "value")
+            self.assertNotIn(expected_js, rendered_widget_html)

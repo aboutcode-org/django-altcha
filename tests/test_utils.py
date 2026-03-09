@@ -9,6 +9,7 @@ from datetime import datetime
 from unittest import mock
 
 from django.test import TestCase
+from django.test import override_settings
 
 from django_altcha import get_altcha_challenge
 
@@ -38,7 +39,7 @@ class DjangoAltchaUtilsTest(TestCase):
         self.assertIn("1760072410", salt_expires)
 
         # Custom ALTCHA_CHALLENGE_EXPIRE value is applied
-        with mock.patch("django_altcha.ALTCHA_CHALLENGE_EXPIRE", 9999):
+        with override_settings(ALTCHA_CHALLENGE_EXPIRE=9999):
             challenge = get_altcha_challenge()
             salt_expires = challenge.salt.split("?expires=")[-1]
             self.assertIn("1760072409", salt_expires)
