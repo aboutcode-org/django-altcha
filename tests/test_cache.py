@@ -12,8 +12,8 @@ from unittest import mock
 from django.core.cache.backends.locmem import LocMemCache
 from django.test import override_settings
 
-from django_altcha import ALTCHA_CHALLENGE_EXPIRE_SECONDS
 from django_altcha import get_altcha_cache
+from django_altcha import get_challenge_expire_seconds
 from django_altcha import is_challenge_used
 from django_altcha import mark_challenge_used
 
@@ -32,14 +32,14 @@ class DjangoAltchaCacheTest(unittest.TestCase):
     def test_get_altcha_cache_without_alias_uses_locmemcache(self):
         cache = get_altcha_cache()
         self.assertIsInstance(cache, LocMemCache)
-        self.assertEqual(cache.default_timeout, ALTCHA_CHALLENGE_EXPIRE_SECONDS)
+        self.assertEqual(cache.default_timeout, get_challenge_expire_seconds())
 
     def test_mark_and_check_challenge_used(self):
         cache = get_altcha_cache()
         cache.clear()
 
         self.assertFalse(is_challenge_used(self.challenge))
-        mark_challenge_used(self.challenge, timeout=ALTCHA_CHALLENGE_EXPIRE_SECONDS)
+        mark_challenge_used(self.challenge, timeout=get_challenge_expire_seconds())
         self.assertTrue(is_challenge_used(self.challenge))
 
     def test_challenge_expires(self):

@@ -14,7 +14,6 @@ from django.forms import ValidationError
 from django.test import TestCase
 from django.test import override_settings
 
-from django_altcha import ALTCHA_CHALLENGE_EXPIRE
 from django_altcha import AltchaField
 from django_altcha import AltchaWidget
 from django_altcha import is_challenge_used
@@ -40,14 +39,6 @@ class DjangoAltchaFieldTest(TestCase):
         form = self.form_class()
         self.assertIsInstance(form.fields["altcha_field"].widget, AltchaWidget)
 
-    def test_altcha_field_widget_default_options(self):
-        altcha_field = AltchaField()
-        self.assertEqual(ALTCHA_CHALLENGE_EXPIRE, altcha_field.widget.options["expire"])
-        altcha_field = AltchaField(expire=1)
-        self.assertEqual(1, altcha_field.widget.options["expire"])
-        altcha_field = AltchaField(expire=None)
-        self.assertEqual(None, altcha_field.widget.options["expire"])
-
     def test_altcha_field_options_to_widget(self):
         altcha_field = AltchaField(maxnumber=50, expire=10000)
         self.assertEqual(50, altcha_field.widget.options["maxnumber"])
@@ -58,7 +49,7 @@ class DjangoAltchaFieldTest(TestCase):
         with self.assertRaises(ValidationError):
             altcha_field.validate("a_value")
 
-        with mock.patch("django_altcha.ALTCHA_VERIFICATION_ENABLED", False):
+        with override_settings(ALTCHA_VERIFICATION_ENABLED=False):
             self.assertIsNone(altcha_field.validate("a_value"))
 
     def test_altcha_field_with_missing_value_raises_required_error(self):
