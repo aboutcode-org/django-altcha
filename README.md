@@ -134,9 +134,10 @@ This protection is enabled by default and requires no additional configuration f
 single-process deployments.
 
 > [!IMPORTANT]
-> The default in-memory cache is **not shared across workers**. If you run multiple
-> workers (e.g., with gunicorn or uwsgi), you must configure a shared cache backend
-> using the `ALTCHA_CACHE_ALIAS` setting. 
+> By default, replay protection uses Django's `default` cache backend, which is
+> `LocMemCache` unless you configure it otherwise. This in-memory cache is
+> **not shared across workers**. If you run multiple workers (e.g., with gunicorn
+> or uwsgi), configure a shared cache backend such as Redis or Memcached.
 
 ## Settings
 
@@ -146,24 +147,24 @@ single-process deployments.
 
 ### ALTCHA_CACHE_ALIAS
 
-Cache alias used for replay attack protection.
+Django cache alias used for replay attack protection.
+Defaults to `"default"`.
 
-By default, challenges are stored in a local in-memory cache to prevent reuse.
-This works well for single-process deployments, but **does not protect against
-replay attacks in multi-worker setups** (e.g., gunicorn or uwsgi with multiple workers).
+If your `default` cache is already a shared backend (Redis, Memcached, database),
+no extra configuration is needed.
 
-For production deployments with multiple workers, configure a shared cache backend:
+If you want to use a dedicated cache for ALTCHA, define one and point to it:
 
 **Using Redis or Memcached:**
 
 ```python
 CACHES = {
-    'default': {
+    'altcha': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
         'LOCATION': 'redis://127.0.0.1:6379',
     }
 }
-ALTCHA_CACHE_ALIAS = 'default'
+ALTCHA_CACHE_ALIAS = 'altcha'
 ```
 
 **Using Database Caching:**
