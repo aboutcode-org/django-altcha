@@ -60,7 +60,6 @@ class DjangoAltchaFieldTest(TestCase):
             form.errors["altcha_field"][0], "ALTCHA CAPTCHA token is missing."
         )
 
-    @override_settings(ALTCHA_CACHE_ALIAS=None)
     @mock.patch("altcha.verify_solution")
     def test_altcha_field_validation_calls_verify_solution(self, mock_verify_solution):
         self.assertFalse(is_challenge_used(TEST_CHALLENGE))
