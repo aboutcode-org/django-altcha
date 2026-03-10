@@ -1,6 +1,32 @@
 Changelog
 =========
 
+v0.10.0 (2026-03-10)
+-------------------
+
+**WARNING Breaking changes:**
+
+1. ALTCHA_HMAC_KEY is now mandatory.
+  If it's not set in your Django settings, the app will raise ImproperlyConfigured at
+  the first challenge creation or validation, instead of silently generating a random
+  fallback key.
+
+2. ALTCHA_CACHE_ALIAS now defaults to "default" instead of using a dedicated LocMemCache
+  instance. This means ALTCHA automatically benefits from whatever cache backend your
+  project already has configured.
+  Projects that explicitly set ALTCHA_CACHE_ALIAS are not affected.
+  Removed the internal LocMemCache fallback. Cache configuration is now fully handled
+  through Django's CACHES setting.
+
+- Refactor the cache configuration using "default" when not provided.
+  https://github.com/aboutcode-org/django-altcha/pull/36
+
+- Make the ALTCHA_HMAC_KEY setting mandatory.
+  https://github.com/aboutcode-org/django-altcha/pull/35
+
+- Refactor the ALTCHA_* settings loading.
+  https://github.com/aboutcode-org/django-altcha/pull/34
+
 v0.9.1 (2026-03-05)
 -------------------
 
