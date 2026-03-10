@@ -11,7 +11,6 @@ import json
 
 from django import forms
 from django.core.cache import caches
-from django.core.cache.backends.locmem import LocMemCache
 from django.core.exceptions import ImproperlyConfigured
 from django.forms.widgets import HiddenInput
 from django.http import JsonResponse
@@ -40,37 +39,19 @@ def get_challenge_expire_seconds():
     return get_setting("ALTCHA_CHALLENGE_EXPIRE") // 1000
 
 
-def get_altcha_cache():
-    """
-    Returns a Django cache backend instance to be used for storing ALTCHA challenge
-    data, especially for replay attack protection.
-
-    - If the setting `ALTCHA_CACHE_ALIAS` is set, the cache with that alias
-      will be used.
-    - If not set, a local in-memory cache will be used with a timeout matching
-      the challenge expiration in seconds.
-    """
-    cache_alias = get_setting("ALTCHA_CACHE_ALIAS")
-    if cache_alias:
-        return caches[cache_alias]
-
-    # Use the same timeout for the cache as the challenge expiration to ensure
-    # cached challenges expire in sync with their validity period.
-    params = {"timeout": get_challenge_expire_seconds()}
-    return LocMemCache(name="altcha_local", params=params)
-
-
-_altcha_cache = get_altcha_cache()
+def get_cache():
+    """Return the cache backend used for replay attack protection."""
+    return caches[get_setting("ALTCHA_CACHE_ALIAS")]
 
 
 def is_challenge_used(challenge):
     """Check if a challenge has already been used."""
-    return _altcha_cache.get(key=challenge) is not None
+    return get_cache().get(key=challenge) is not None
 
 
 def mark_challenge_used(challenge, timeout):
     """Mark a challenge as used by storing it in the cache with a timeout."""
-    _altcha_cache.set(key=challenge, value=True, timeout=timeout)
+    get_cache().set(key=challenge, value=True, timeout=timeout)
 
 
 def get_altcha_challenge(max_number=None, expires=None):
