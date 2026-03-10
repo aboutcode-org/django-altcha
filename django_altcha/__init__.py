@@ -23,7 +23,7 @@ import altcha
 
 from .conf import get_setting
 
-__version__ = "0.9.1"
+__version__ = "0.10.0"
 VERSION = __version__
 
 
