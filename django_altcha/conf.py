@@ -17,6 +17,8 @@ final project configuration.
 
 from django.conf import settings
 
+from django_altcha.utils import lazy_static
+
 _DEFAULTS = {
     # Set to `False` to skip Altcha validation altogether.
     "ALTCHA_VERIFICATION_ENABLED": True,
@@ -24,10 +26,10 @@ _DEFAULTS = {
     "ALTCHA_HMAC_KEY": None,
     # URL of the Altcha JavaScript file.
     # Defaults to the bundled django-altcha file.
-    "ALTCHA_JS_URL": "/static/altcha/altcha.min.js",
+    "ALTCHA_JS_URL": lazy_static("altcha/altcha.min.js"),
     # URL of the Altcha translations JavaScript file.
     # Defaults to the bundled django-altcha file.
-    "ALTCHA_JS_TRANSLATIONS_URL": "/static/altcha/dist_i18n/all.min.js",
+    "ALTCHA_JS_TRANSLATIONS_URL": lazy_static("altcha/dist_i18n/all.min.js"),
     # Whether to include Altcha translations.
     # https://altcha.org/docs/v2/widget-integration/#internationalization-i18n
     "ALTCHA_INCLUDE_TRANSLATIONS": False,
