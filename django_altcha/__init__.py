@@ -8,6 +8,7 @@
 import base64
 import datetime
 import json
+import logging
 
 from django import forms
 from django.core.cache import caches
@@ -22,6 +23,8 @@ from django.views.decorators.http import require_GET
 import altcha
 
 from .conf import get_setting
+
+logger = logging.getLogger(__name__)
 
 __version__ = "0.10.0"
 VERSION = __version__
@@ -225,9 +228,15 @@ class AltchaField(forms.Field):
         kwargs["widget"] = self.widget(options=widget_options)
         super().__init__(*args, **kwargs)
 
+    def log_warning(self, message):
+        logger.warning(message)
+
     def validate(self, value):
         """Validate the CAPTCHA token and verify its authenticity."""
         if not get_setting("ALTCHA_VERIFICATION_ENABLED"):
+            self.log_warning(
+                "ALTCHA verification is disabled. CAPTCHA provides no protection."
+            )
             return
 
         super().validate(value)
@@ -243,10 +252,12 @@ class AltchaField(forms.Field):
                 hmac_key=get_hmac_key(),
                 check_expires=True,
             )
-        except Exception:
+        except Exception as e:
+            self.log_warning(f"ALTCHA verification error: {e}")
             raise forms.ValidationError(self.error_messages["error"], code="error")
 
         if not verified:
+            self.log_warning(f"ALTCHA verification failed: {error}")
             raise forms.ValidationError(self.error_messages["invalid"], code="invalid")
 
         self.replay_attack_protection(payload=value)
@@ -257,10 +268,14 @@ class AltchaField(forms.Field):
             # Decode payload from base64 and parse JSON to extract the challenge
             payload_data = json.loads(base64.b64decode(payload).decode())
             challenge = payload_data["challenge"]
-        except Exception:
+        except Exception as e:
+            self.log_warning(f"ALTCHA failed to decode payload: {e}")
             raise forms.ValidationError(self.error_messages["error"], code="error")
 
         if is_challenge_used(challenge):
+            self.log_warning(
+                f"ALTCHA replay attack detected for challenge: {challenge}"
+            )
             raise forms.ValidationError(self.error_messages["replay"], code="invalid")
 
         # Mark as used for the same duration as challenge expiration
