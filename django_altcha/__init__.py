@@ -60,14 +60,14 @@ def mark_challenge_used(challenge, timeout):
 
 def get_altcha_challenge(max_number=None, expires=None):
     """
-    Generate and return an ALTCHA challenge.
+    Generate and return an ALTCHA v1 challenge.
 
     Attributes:
         max_number (int): Maximum number to use for the challenge.
         expires (int): Expiration time for the challenge in milliseconds.
 
     Returns:
-        altcha.Challenge: The generated challenge.
+        altcha.ChallengeV1: The generated challenge.
     """
     expires = expires or get_setting("ALTCHA_CHALLENGE_EXPIRE")
     options = {
@@ -78,7 +78,7 @@ def get_altcha_challenge(max_number=None, expires=None):
     if max_number is not None:
         options["max_number"] = max_number
 
-    challenge = altcha.create_challenge(altcha.ChallengeOptions(**options))
+    challenge = altcha.create_challenge_v1(altcha.ChallengeOptionsV1(**options))
     return challenge
 
 
@@ -246,7 +246,7 @@ class AltchaField(forms.Field):
             )
 
         try:
-            verified, error = altcha.verify_solution(
+            verified, error = altcha.verify_solution_v1(
                 payload=value,
                 hmac_key=get_hmac_key(),
                 check_expires=True,
