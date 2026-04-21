@@ -1,6 +1,18 @@
 Changelog
 =========
 
+v1.0.0 (2026-04-21)
+-------------------
+
+- feat: add logging for validation failures and misconfiguration
+  https://github.com/aboutcode-org/django-altcha/pull/46
+
+- fix(settings): resolve static asset URLs through STATIC_URL
+  https://github.com/aboutcode-org/django-altcha/pull/45
+
+- fix(deps): cap altcha at <2.0.0 for incompatible v2 release
+  https://github.com/aboutcode-org/django-altcha/pull/44
+
 v0.10.0 (2026-03-10)
 -------------------
 
