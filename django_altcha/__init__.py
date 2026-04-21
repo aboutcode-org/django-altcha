@@ -8,6 +8,7 @@
 import base64
 import datetime
 import json
+import logging
 
 from django import forms
 from django.core.cache import caches
@@ -26,11 +27,14 @@ from .conf import get_setting
 __version__ = "0.10.0"
 VERSION = __version__
 
+logger = logging.getLogger(__name__)
+
 
 def get_hmac_key():
     """Return the HMAC key, raising if not configured."""
     hmac_key = get_setting("ALTCHA_HMAC_KEY")
     if not hmac_key:
+        logger.error("ALTCHA_HMAC_KEY setting is not configured")
         raise ImproperlyConfigured("The ALTCHA_HMAC_KEY setting must be provided.")
     return hmac_key
 
@@ -228,11 +232,15 @@ class AltchaField(forms.Field):
     def validate(self, value):
         """Validate the CAPTCHA token and verify its authenticity."""
         if not get_setting("ALTCHA_VERIFICATION_ENABLED"):
+            logger.debug(
+                "ALTCHA validation skipped: ALTCHA_VERIFICATION_ENABLED is False"
+            )
             return
 
         super().validate(value)
 
         if not value:
+            logger.warning("ALTCHA validation failed: missing token")
             raise forms.ValidationError(
                 self.error_messages["required"], code="required"
             )
@@ -244,9 +252,11 @@ class AltchaField(forms.Field):
                 check_expires=True,
             )
         except Exception:
+            logger.exception("ALTCHA validation raised an unexpected exception")
             raise forms.ValidationError(self.error_messages["error"], code="error")
 
         if not verified:
+            logger.warning("ALTCHA validation failed: %s", error)
             raise forms.ValidationError(self.error_messages["invalid"], code="invalid")
 
         self.replay_attack_protection(payload=value)
@@ -258,9 +268,13 @@ class AltchaField(forms.Field):
             payload_data = json.loads(base64.b64decode(payload).decode())
             challenge = payload_data["challenge"]
         except Exception:
+            logger.exception(
+                "ALTCHA payload could not be decoded for replay protection"
+            )
             raise forms.ValidationError(self.error_messages["error"], code="error")
 
         if is_challenge_used(challenge):
+            logger.warning("ALTCHA replay attack detected: challenge already used")
             raise forms.ValidationError(self.error_messages["replay"], code="invalid")
 
         # Mark as used for the same duration as challenge expiration
@@ -281,4 +295,5 @@ class AltchaChallengeView(View):
         expires = kwargs.get("expires", self.expires)
 
         challenge = get_altcha_challenge(max_number=max_number, expires=expires)
+        logger.debug("ALTCHA challenge issued")
         return JsonResponse(challenge.__dict__)

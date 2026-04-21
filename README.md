@@ -217,6 +217,48 @@ Only loaded when `ALTCHA_INCLUDE_TRANSLATIONS` is `True`.
 Set to `False` to skip Altcha validation altogether.
 Defaults to `True`.
 
+## Logging
+
+Django Altcha uses the standard Python `logging` module under the logger name
+`django_altcha`. No logs are emitted under normal operation; logging fires only
+on validation failures and misconfiguration.
+
+### What gets logged
+
+- **WARNING** on invalid or missing CAPTCHA tokens submitted to a form.
+- **WARNING** on replay attempts (a challenge reused after it has already been validated).
+- **ERROR** when `ALTCHA_HMAC_KEY` is not configured.
+- **Exception with traceback** when verification or payload decoding raises
+  unexpectedly.
+
+Payloads, challenge values, and the HMAC key are never included in log
+messages.
+
+### Enabling logs
+
+Add the `django_altcha` logger to your project's `LOGGING` setting:
+
+```python
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django_altcha": {
+            "handlers": ["console"],
+            "level": "WARNING",
+        },
+    },
+}
+```
+
+Set `"level": "ERROR"` to see only misconfiguration and unexpected failures,
+or `"level": "DEBUG"` to see additional diagnostic messages during development.
+
 ## Contributing
 
 We welcome contributions to improve this library.
