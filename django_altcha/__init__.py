@@ -81,7 +81,7 @@ def get_altcha_challenge(max_number=None, expires=None):
 class AltchaWidget(HiddenInput):
     template_name = "altcha_widget.html"
 
-    def __init__(self, options, *args, **kwargs):
+    def __init__(self, options=None, *args, **kwargs):
         """Initialize the ALTCHA widget with provided options from the field."""
         self.options = options or {}
         super().__init__(*args, **kwargs)

@@ -15,7 +15,7 @@ from django_altcha import AltchaWidget
 
 class DjangoAltchaWidgetTest(TestCase):
     def test_widget_initialization_with_default_options(self):
-        widget = AltchaWidget(options=None)
+        widget = AltchaWidget()
         self.assertNotIn("challengeurl", widget.options)
         self.assertNotIn("challengejson", widget.options)
         self.assertNotIn("auto", widget.options)
@@ -56,7 +56,7 @@ class DjangoAltchaWidgetTest(TestCase):
         self.assertIn(expected, rendered_widget_html)
 
     def test_js_translation_included_if_enabled(self):
-        widget = AltchaWidget(options=None)
+        widget = AltchaWidget()
         expected_js = "/static/altcha/dist_i18n/all.min.js"
 
         with override_settings(ALTCHA_INCLUDE_TRANSLATIONS=True):
@@ -66,3 +66,61 @@ class DjangoAltchaWidgetTest(TestCase):
         with override_settings(ALTCHA_INCLUDE_TRANSLATIONS=False):
             rendered_widget_html = widget.render("name", "value")
             self.assertNotIn(expected_js, rendered_widget_html)
+
+    def test_widget_renders_default_js_url_through_static(self):
+        widget = AltchaWidget()
+        rendered_html = widget.render("name", "value")
+        self.assertIn("/static/altcha/altcha.min.js", rendered_html)
+
+    def test_widget_respects_custom_static_url(self):
+        widget = AltchaWidget()
+        with override_settings(STATIC_URL="/assets/"):
+            rendered_html = widget.render("name", "value")
+        self.assertIn("/assets/altcha/altcha.min.js", rendered_html)
+        self.assertNotIn("/static/altcha/altcha.min.js", rendered_html)
+
+    def test_widget_resolves_relative_js_url_override(self):
+        widget = AltchaWidget()
+        with override_settings(ALTCHA_JS_URL="custom/altcha.js"):
+            rendered_html = widget.render("name", "value")
+        self.assertIn("/static/custom/altcha.js", rendered_html)
+
+    def test_widget_passes_through_absolute_js_url(self):
+        widget = AltchaWidget()
+        with override_settings(ALTCHA_JS_URL="/my_static/altcha.js"):
+            rendered_html = widget.render("name", "value")
+        self.assertIn('src="/my_static/altcha.js"', rendered_html)
+        self.assertNotIn("/static/my_static/altcha.js", rendered_html)
+
+    def test_widget_passes_through_http_js_url(self):
+        widget = AltchaWidget()
+        cdn_url = "http://cdn/altcha.min.js"
+        with override_settings(ALTCHA_JS_URL=cdn_url):
+            rendered_html = widget.render("name", "value")
+        self.assertIn(cdn_url, rendered_html)
+
+    def test_widget_passes_through_https_js_url(self):
+        widget = AltchaWidget()
+        cdn_url = "https://cdn/altcha.min.js"
+        with override_settings(ALTCHA_JS_URL=cdn_url):
+            rendered_html = widget.render("name", "value")
+        self.assertIn(cdn_url, rendered_html)
+
+    def test_widget_resolves_translations_url_through_static(self):
+        widget = AltchaWidget()
+        with override_settings(
+            ALTCHA_INCLUDE_TRANSLATIONS=True,
+            STATIC_URL="/assets/",
+        ):
+            rendered_html = widget.render("name", "value")
+        self.assertIn("/assets/altcha/dist_i18n/all.min.js", rendered_html)
+
+    def test_widget_passes_through_absolute_translations_url(self):
+        widget = AltchaWidget()
+        cdn_url = "https://cdni18n/all.min.js"
+        with override_settings(
+            ALTCHA_INCLUDE_TRANSLATIONS=True,
+            ALTCHA_JS_TRANSLATIONS_URL=cdn_url,
+        ):
+            rendered_html = widget.render("name", "value")
+        self.assertIn(cdn_url, rendered_html)

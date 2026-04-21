@@ -1,5 +1,6 @@
 INSTALLED_APPS = ["django_altcha"]
 DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3"}}
 ROOT_URLCONF = "tests.urls"
+STATIC_URL = "/static/"
 ALTCHA_HMAC_KEY = "altcha-insecure-hmac-0123456789abcdef"
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
