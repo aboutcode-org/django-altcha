@@ -24,7 +24,7 @@ import altcha
 
 from .conf import get_setting
 
-__version__ = "0.10.0"
+__version__ = "1.0.0"
 VERSION = __version__
 
 logger = logging.getLogger(__name__)
