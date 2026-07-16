@@ -60,7 +60,7 @@ class DjangoAltchaFieldTest(TestCase):
             form.errors["altcha_field"][0], "ALTCHA CAPTCHA token is missing."
         )
 
-    @mock.patch("altcha.verify_solution")
+    @mock.patch("altcha.verify_solution_v1")
     def test_altcha_field_validation_calls_verify_solution(self, mock_verify_solution):
         self.assertFalse(is_challenge_used(TEST_CHALLENGE))
         mock_verify_solution.return_value = (True, None)
@@ -81,7 +81,7 @@ class DjangoAltchaFieldTest(TestCase):
             form.errors["altcha_field"][0], "Challenge has already been used."
         )
 
-    @mock.patch("altcha.verify_solution")
+    @mock.patch("altcha.verify_solution_v1")
     def test_altcha_field_validation_fails_on_invalid_token(self, mock_verify_solution):
         mock_verify_solution.return_value = (False, "Invalid token")
         form = self.form_class(data={"altcha_field": "invalid_token"})
@@ -89,7 +89,7 @@ class DjangoAltchaFieldTest(TestCase):
         self.assertIn("altcha_field", form.errors)
         self.assertEqual(form.errors["altcha_field"][0], "Invalid CAPTCHA token.")
 
-    @mock.patch("altcha.verify_solution")
+    @mock.patch("altcha.verify_solution_v1")
     def test_altcha_field_validation_handles_exception(self, mock_verify_solution):
         mock_verify_solution.side_effect = Exception("Verification failed")
         form = self.form_class(data={"altcha_field": "some_token"})
